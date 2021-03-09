@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.madlevel3example.databinding.FragmentRemindersBinding
@@ -44,6 +45,7 @@ class RemindersFragment : Fragment() {
         binding.rvReminders.layoutManager =
             LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         binding.rvReminders.adapter = reminderAdapter
+        createItemTouchHelper().attachToRecyclerView(binding.rvReminders)
     }
 
     override fun onDestroyView() {
@@ -61,5 +63,34 @@ class RemindersFragment : Fragment() {
             }       // Throws an error log when there's no text.
                     ?: Log.e("RemindersFragment", "Request triggered, but empty reminder text!")
         }
+    }
+
+    /**
+     * Create a touch helper to recognize when a user swipes an item from a recycler view.
+     * An ItemTouchHelper enables touch behaviour (like swipe and move) on each ViewHolder,
+     * and uses callbacks to signal when a user is performing these actions.
+     */
+    private fun createItemTouchHelper(): ItemTouchHelper {
+
+        // Callback which is used to create the ItemTouch helper. Only enables left swipe.
+        // Use ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) to also enable right swipe.
+        val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+            override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                reminders.removeAt(position)
+                reminderAdapter.notifyDataSetChanged()
+            }
+        }
+
+        return ItemTouchHelper(callback)
     }
 }
